@@ -11,6 +11,8 @@
   ],
   "minimum-stability": "stable",
   "require": {
+  },
+  "suggest": {
     "ext-pcntl": "*"
   },
   "autoload": {

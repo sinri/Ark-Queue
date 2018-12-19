@@ -1,99 +1,37 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/5/21
- * Time: 15:18
+ * User: sinri
+ * Date: 2018-12-19
+ * Time: 11:12
  */
 
-namespace sinri\ark\queue\daemon;
+namespace sinri\ark\queue\parallel;
 
-/**
- * Class QueueDaemon
- * @package sinri\ark\queue\daemon
- * @deprecated since 2.0 and would be removed in the future
- */
-class QueueDaemon
+
+use sinri\ark\queue\AbstractQueueDaemon;
+
+class ParallelQueueDaemon extends AbstractQueueDaemon
 {
-    const DAEMON_STYLE_SINGLE_SYNCHRONIZED = "SINGLE_SYNCHRONIZED";
-    const DAEMON_STYLE_SINGLE_POOLED = "SINGLE_POOLED";
-
+    /**
+     * @var ParallelQueueDaemonDelegate
+     */
     protected $delegate;
-    protected $daemonStyle;
-
-    // properties which only used in pooled mode
+    /**
+     * @var int
+     */
     protected $childrenCount;
 
     /**
-     * QueueDaemon constructor.
-     * @param QueueDaemonDelegate $delegate
+     * SerialQueueDaemon constructor.
+     * @param ParallelQueueDaemonDelegate $delegate
      */
     public function __construct($delegate)
     {
         $this->delegate = $delegate;
-
-        $this->daemonStyle = $this->delegate->getDaemonStyle();
-        if (!in_array(
-            $this->daemonStyle,
-            [
-                self::DAEMON_STYLE_SINGLE_SYNCHRONIZED,
-                self::DAEMON_STYLE_SINGLE_POOLED,
-            ]
-        )) {
-            $this->daemonStyle = self::DAEMON_STYLE_SINGLE_SYNCHRONIZED;
-        }
-
-        //initialize
-        $this->childrenCount = 0;
     }
 
     public function loop()
-    {
-        switch ($this->daemonStyle) {
-            case self::DAEMON_STYLE_SINGLE_POOLED:
-                $this->loopWithSinglePooledStyle();
-                break;
-            case self::DAEMON_STYLE_SINGLE_SYNCHRONIZED:
-            default:
-                $this->loopWithSingleSynchronizedStyle();
-                break;
-        }
-    }
-
-    protected function loopWithSingleSynchronizedStyle()
-    {
-        while (true) {
-            if ($this->delegate->shouldTerminate()) {
-                break;
-            }
-            if (!$this->delegate->isRunnable()) {
-                $this->delegate->whenLoopShouldNotRun();
-                continue;
-            }
-            $nextTask = $this->delegate->checkNextTask();
-            if ($nextTask === false) {
-                $this->delegate->whenNoTaskToDo();
-                continue;
-            }
-
-            if (!$nextTask->beforeExecute()) {
-                $this->delegate->whenTaskNotExecutable($nextTask);
-                continue;
-            }
-
-            try {
-                $this->delegate->whenToExecuteTask($nextTask);
-                $nextTask->execute();
-                $this->delegate->whenTaskExecuted($nextTask);
-            } catch (\Exception $exception) {
-                $this->delegate->whenTaskRaisedException($nextTask, $exception);
-            }
-
-        }
-        $this->delegate->whenLoopTerminates();
-    }
-
-    protected function loopWithSinglePooledStyle()
     {
         while (true) {
             if ($this->delegate->shouldTerminate()) {

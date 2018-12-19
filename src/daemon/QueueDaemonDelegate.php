@@ -15,6 +15,7 @@ use sinri\ark\queue\QueueTask;
  * Class QueueDaemonDelegate
  * NOTE: ALL THE METHODS OF THIS CLASS SHOULD NOT THROW EXCEPTIONS. ALL THE LOOP WOULD NOT BE CONTROLLED.
  * @package leqee\phpqueuekit\daemon
+ * @deprecated since 2.0 and would be removed in the future
  */
 abstract class QueueDaemonDelegate
 {

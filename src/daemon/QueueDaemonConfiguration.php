@@ -8,7 +8,11 @@
 
 namespace sinri\ark\queue\daemon;
 
-
+/**
+ * Class QueueDaemonConfiguration
+ * @package sinri\ark\queue\daemon
+ * @deprecated since 2.0 and would be removed in the future
+ */
 abstract class QueueDaemonConfiguration
 {
     /**

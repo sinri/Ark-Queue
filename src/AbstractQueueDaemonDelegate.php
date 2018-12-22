@@ -9,6 +9,9 @@
 namespace sinri\ark\queue;
 
 
+use sinri\ark\queue\parallel\ParallelQueueTask;
+use sinri\ark\queue\serial\SerialQueueTask;
+
 abstract class AbstractQueueDaemonDelegate
 {
     const QUEUE_RUNTIME_COMMAND_PAUSE = "PAUSE";
@@ -23,11 +26,6 @@ abstract class AbstractQueueDaemonDelegate
      * @param array $config Put any properties here
      */
     abstract public function __construct($config = []);
-
-    /**
-     * @return string
-     */
-    abstract public function getDaemonStyle();
 
     /**
      * @param string $error
@@ -58,7 +56,7 @@ abstract class AbstractQueueDaemonDelegate
     abstract public function whenLoopShouldNotRun();
 
     /**
-     * @return QueueTask|false
+     * @return QueueTask|SerialQueueTask|ParallelQueueTask|false
      */
     abstract public function checkNextTask();
 

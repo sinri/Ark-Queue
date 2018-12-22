@@ -92,7 +92,7 @@ abstract class QueueTask
     /**
      * Execute a task then:
      * (1) store extra output data in property $executeResult
-     * (2) give a feedback string in property $feedback
+     * (2) give a feedback string in property $executeFeedback
      * (3) give a boolean value in property $done and return
      * @return bool
      */

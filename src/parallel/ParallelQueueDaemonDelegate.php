@@ -10,7 +10,6 @@ namespace sinri\ark\queue\parallel;
 
 
 use sinri\ark\queue\AbstractQueueDaemonDelegate;
-use sinri\ark\queue\QueueTask;
 
 abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
 {
@@ -24,9 +23,9 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
     }
 
     /**
-     * @return QueueTask|false
+     * @return ParallelQueueTask|false
      */
-    public function checkNextTask()
+    public final function checkNextTask()
     {
         return $this->checkNextTaskImplement();
     }
@@ -42,10 +41,7 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
      * The daemon would fork child processes up to the certain number
      * @return int
      */
-    public function maxChildProcessCountForSinglePooledStyle()
-    {
-        return 5;
-    }
+    abstract public function maxChildProcessCountForSinglePooledStyle();
 
     /**
      * When a child process is forked
@@ -70,7 +66,19 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
      * 如果返回true，则在执行完whenPoolIsFull之后会进行阻塞wait子进程
      * @return bool
      */
-    abstract public function shouldWaitForAnyWorkerDone();
+    public function shouldWaitForAnyWorkerDone()
+    {
+        return true;
+    }
+
+    /**
+     * Before waiting for tasks done (without WNOHANG option).
+     * @return void
+     */
+    public function whenStartLongWaiting()
+    {
+        // do nothing, maybe you want to write logs
+    }
 
     const PROCESS_TYPE_WORKER = "WORKER";
 

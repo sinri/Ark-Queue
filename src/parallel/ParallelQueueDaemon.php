@@ -31,30 +31,47 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
         $this->delegate = $delegate;
     }
 
+    protected function recycle($shouldKeepWaitForAll)
+    {
+        if (!$shouldKeepWaitForAll) {
+            $options = WNOHANG | WUNTRACED;
+        } else {
+            $this->recycle(false);
+            if ($this->childrenCount <= 0) {
+                // no need to wait any more
+                return;
+            }
+            $options = WUNTRACED;
+            $this->delegate->whenStartLongWaiting();
+        }
+
+        for ($i = 0; $i < $this->childrenCount; $i++) {
+            // pcntl_wait() returns the process ID of the child which exited,
+            // -1 on error
+            // or zero if WNOHANG was provided as an option (on wait3-available systems) and no child was available.
+            $exitedChildProcessID = pcntl_wait($status, $options);
+            if ($exitedChildProcessID > 0) {
+                $this->childrenCount--;
+                $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID);
+            } elseif ($exitedChildProcessID === -1) {
+                $pcntl_error_number = pcntl_get_last_error();
+                $pcntl_error_string = pcntl_strerror($pcntl_error_number);
+                $error_message = 'Loop could not wait a child process to stop. Error No:' . $pcntl_error_number . " Message:" . $pcntl_error_string;
+                $this->delegate->whenLoopReportError($error_message);
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+
     public function loop()
     {
         while (true) {
             if ($this->delegate->shouldTerminate()) {
                 break;
             }
-            for ($i = 0; $i < $this->childrenCount; $i++) {
-                // pcntl_wait() returns the process ID of the child which exited,
-                // -1 on error
-                // or zero if WNOHANG was provided as an option (on wait3-available systems) and no child was available.
-                $exitedChildProcessID = pcntl_wait($status, WNOHANG | WUNTRACED);
-                if ($exitedChildProcessID > 0) {
-                    $this->childrenCount--;
-                    $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID);
-                } elseif ($exitedChildProcessID === -1) {
-                    $pcntl_error_number = pcntl_get_last_error();
-                    $pcntl_error_string = pcntl_strerror($pcntl_error_number);
-                    $error_message = 'Loop could not wait a child process to stop. Error No:' . $pcntl_error_number . " Message:" . $pcntl_error_string;
-                    $this->delegate->whenLoopReportError($error_message);
-                    break;
-                } else {
-                    break;
-                }
-            }
+            $this->recycle(false);
             if ($this->childrenCount >= $this->delegate->maxChildProcessCountForSinglePooledStyle()) {
                 $this->delegate->whenPoolIsFull();
                 if ($this->delegate->shouldWaitForAnyWorkerDone()) {
@@ -81,6 +98,11 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 continue;
             }
 
+            if ($nextTask->isExclusive()) {
+                // now daemon should wait for the other tasks to be over
+                $this->recycle(true);
+            }
+
             // since @0.2.0 it is executed before fork
             if (!$nextTask->beforeExecute()) {
                 $this->delegate->whenTaskNotExecutable($nextTask);
@@ -99,6 +121,11 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 // we are the parent
                 $this->childrenCount++;
                 $this->delegate->whenChildProcessForked($childProcessID, "For task " . $nextTask->getTaskReference());
+
+                if ($nextTask->isExclusive()) {
+                    // now daemon should wait for the exclusive task to be over
+                    $this->recycle(true);
+                }
             } else {
                 // we are the child
                 $this->delegate->markThisProcessAsWorker();

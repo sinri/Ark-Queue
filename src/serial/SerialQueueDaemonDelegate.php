@@ -10,7 +10,6 @@ namespace sinri\ark\queue\serial;
 
 
 use sinri\ark\queue\AbstractQueueDaemonDelegate;
-use sinri\ark\queue\QueueTask;
 
 abstract class SerialQueueDaemonDelegate extends AbstractQueueDaemonDelegate
 {
@@ -23,9 +22,9 @@ abstract class SerialQueueDaemonDelegate extends AbstractQueueDaemonDelegate
     }
 
     /**
-     * @return QueueTask|false
+     * @return SerialQueueTask|false
      */
-    public function checkNextTask()
+    public final function checkNextTask()
     {
         return $this->checkNextTaskImplement();
     }

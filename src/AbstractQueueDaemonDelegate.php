@@ -21,6 +21,7 @@ abstract class AbstractQueueDaemonDelegate
     const QUEUE_RUNTIME_COMMAND_RESTART = "RESTART";
     const QUEUE_RUNTIME_COMMAND_FORCE_RESTART = "FORCE-RESTART";
 
+
     /**
      * QueueDaemon constructor.
      * @param array $config Put any properties here
@@ -72,12 +73,13 @@ abstract class AbstractQueueDaemonDelegate
     abstract public function whenTaskNotExecutable($task);
 
     /**
-     *
+     * @since 2.1 Note: Any exceptions should be caught inside.
      * @param QueueTask $task
      */
     abstract public function whenToExecuteTask($task);
 
     /**
+     * @since 2.1 Note: Any exceptions should be caught inside.
      * @param QueueTask $task
      */
     abstract public function whenTaskExecuted($task);

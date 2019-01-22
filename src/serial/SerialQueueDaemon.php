@@ -48,14 +48,13 @@ class SerialQueueDaemon extends AbstractQueueDaemon
                 continue;
             }
 
+            $this->delegate->whenToExecuteTask($nextTask);
             try {
-                $this->delegate->whenToExecuteTask($nextTask);
                 $nextTask->execute();
-                $this->delegate->whenTaskExecuted($nextTask);
             } catch (\Exception $exception) {
                 $this->delegate->whenTaskRaisedException($nextTask, $exception);
             }
-
+            $this->delegate->whenTaskExecuted($nextTask);
         }
         $this->delegate->whenLoopTerminates();
     }

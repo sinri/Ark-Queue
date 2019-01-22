@@ -27,6 +27,10 @@ abstract class QueueTask
      * @var mixed
      */
     protected $executeResult;
+    /**
+     * @var bool
+     */
+    protected $readyToFinish;
 
     public function __construct()
     {
@@ -39,13 +43,22 @@ abstract class QueueTask
     /**
      * @return bool
      */
+    public function isReadyToFinish()
+    {
+        return $this->readyToFinish;
+    }
+
+    /**
+     * @return bool
+     */
     public function isReadyToExecute()
     {
         return $this->readyToExecute;
     }
 
     /**
-     * Fetch the unique reference of this task, such as TASK_ID
+     * Fetch the unique reference of this task, such as TASK_ID.
+     * Note, this reference should be globally unique.
      * @since 0.1.2
      * @return int|string
      */
@@ -97,4 +110,23 @@ abstract class QueueTask
      * @return bool
      */
     abstract public function execute();
+
+    /**
+     * Do anything after execution, no matter the situation.
+     * You may need to release the locks here.
+     * Update $readyToFinish and return it.
+     * @return bool
+     */
+    abstract public function afterExecute();
+
+    /**
+     * One queue task might have several locks.
+     * I.e. If A task holding lock x and y started,
+     * no any tasks could be started
+     * if they hold x, hold y or hold both of them.
+     * The implementation of LOCK depends on the delegate.
+     *
+     * @return string[]
+     */
+    abstract public function getLockList();
 }

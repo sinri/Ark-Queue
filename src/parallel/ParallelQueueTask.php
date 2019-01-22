@@ -24,4 +24,24 @@ abstract class ParallelQueueTask extends QueueTask
         return false;
     }
 
+    /**
+     * @return bool
+     */
+    public function beforeExecute()
+    {
+        $this->readyToExecute = true;
+        return $this->readyToExecute;
+    }
+
+    public function afterExecute()
+    {
+        $this->readyToFinish = true;
+        return $this->readyToFinish;
+    }
+
+    public function getLockList()
+    {
+        return [];
+    }
+
 }

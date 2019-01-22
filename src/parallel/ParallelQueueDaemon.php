@@ -129,13 +129,13 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
             } else {
                 // we are the child
                 $this->delegate->markThisProcessAsWorker();
+                $this->delegate->whenToExecuteTask($nextTask);
                 try {
-                    $this->delegate->whenToExecuteTask($nextTask);
                     $nextTask->execute();
-                    $this->delegate->whenTaskExecuted($nextTask);
                 } catch (\Exception $exception) {
                     $this->delegate->whenTaskRaisedException($nextTask, $exception);
                 }
+                $this->delegate->whenTaskExecuted($nextTask);
 
                 // Lord, now lettest thou thy servant depart in peace, according to thy word: (Luke 2:29, KJV)
                 exit(0);

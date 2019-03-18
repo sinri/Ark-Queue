@@ -52,9 +52,11 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
 
     /**
      * When a child process is observed dead by WAIT function
+     *
      * @param int $pid
+     * @param array $detail @since 2.2
      */
-    abstract public function whenChildProcessConfirmedDead($pid);
+    abstract public function whenChildProcessConfirmedDead($pid, $detail = []);
 
     /**
      * When the daemon has made the pool full of child processes to work

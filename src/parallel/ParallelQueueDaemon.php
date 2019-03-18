@@ -52,7 +52,17 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
             $exitedChildProcessID = pcntl_wait($status, $options);
             if ($exitedChildProcessID > 0) {
                 $this->childrenCount--;
-                $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID);
+
+                $detail = [
+                    'isNormalExit' => pcntl_wifexited($status),
+                    'isStopped' => pcntl_wifstopped($status),
+                    'isExistedByUncaughtSignal' => pcntl_wifsignaled($status),
+                    'returnCode' => pcntl_wexitstatus($status),
+                    'signalNumber' => pcntl_wtermsig($status),
+                    'stopCauseSignal' => pcntl_wstopsig($status),
+                ];
+
+                $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID, $detail);
             } elseif ($exitedChildProcessID === -1) {
                 $pcntl_error_number = pcntl_get_last_error();
                 $pcntl_error_string = pcntl_strerror($pcntl_error_number);
@@ -78,7 +88,17 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                     $exitedChildProcessID = pcntl_wait($status);
                     if ($exitedChildProcessID > 0) {
                         $this->childrenCount--;
-                        $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID);
+
+                        $detail = [
+                            'isNormalExit' => pcntl_wifexited($status),
+                            'isStopped' => pcntl_wifstopped($status),
+                            'isExistedByUncaughtSignal' => pcntl_wifsignaled($status),
+                            'returnCode' => pcntl_wexitstatus($status),
+                            'signalNumber' => pcntl_wtermsig($status),
+                            'stopCauseSignal' => pcntl_wstopsig($status),
+                        ];
+
+                        $this->delegate->whenChildProcessConfirmedDead($exitedChildProcessID, $detail);
                     } elseif ($exitedChildProcessID === -1) {
                         $pcntl_error_number = pcntl_get_last_error();
                         $pcntl_error_string = pcntl_strerror($pcntl_error_number);

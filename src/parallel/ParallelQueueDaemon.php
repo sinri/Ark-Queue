@@ -140,7 +140,8 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
             } else if ($childProcessID) {
                 // we are the parent
                 $this->childrenCount++;
-                $this->delegate->whenChildProcessForked($childProcessID, "For task " . $nextTask->getTaskReference());
+                // @since 2.3 added the third parameter
+                $this->delegate->whenChildProcessForked($childProcessID, "For task " . $nextTask->getTaskReference(), $nextTask->getTaskReference());
 
                 if ($nextTask->isExclusive()) {
                     // now daemon should wait for the exclusive task to be over

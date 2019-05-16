@@ -47,8 +47,9 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
      * When a child process is forked
      * @param int $pid
      * @param string $note
+     * @param null|int|string $taskReference @since 2.3
      */
-    abstract public function whenChildProcessForked($pid, $note = '');
+    abstract public function whenChildProcessForked($pid, $note = '', $taskReference = null);
 
     /**
      * When a child process is observed dead by WAIT function

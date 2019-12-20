@@ -123,13 +123,12 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 $this->recycle(true);
             }
 
-            // since @0.2.0 it is executed before fork
-            if (!$nextTask->beforeExecute()) {
+            // since @2.4 nextTask::beforeExecute should be contained in delegate::beforeFork
+            if (!$this->delegate->beforeFork($nextTask)) {
                 $this->delegate->whenTaskNotExecutable($nextTask);
                 continue;
             }
 
-            $this->delegate->beforeFork();
             $childProcessID = pcntl_fork();
             if ($childProcessID == -1) {
                 $pcntl_error_number = pcntl_get_last_error();
@@ -156,6 +155,7 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 } catch (\Exception $exception) {
                     $this->delegate->whenTaskRaisedException($nextTask, $exception);
                 }
+                // nextTask::afterExecute should be contained in delegate::whenTaskExecuted
                 $this->delegate->whenTaskExecuted($nextTask);
 
                 // Lord, now lettest thou thy servant depart in peace, according to thy word: (Luke 2:29, KJV)

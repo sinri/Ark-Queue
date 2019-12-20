@@ -96,8 +96,12 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
     }
 
     /**
-     * You can close all opened DB connection here
+     * You can close all opened DB connection here.
+     * Mark task as running, maybe also needed.
+     * @param ParallelQueueTask $task
+     * @return bool If not true, not execute/fork
+     * @since 2.4 Greatly Changed
      */
-    abstract public function beforeFork();
+    abstract public function beforeFork($task = null);
 
 }

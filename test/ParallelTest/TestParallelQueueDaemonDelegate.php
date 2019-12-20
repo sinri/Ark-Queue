@@ -122,8 +122,9 @@ class TestParallelQueueDaemonDelegate extends ParallelQueueDaemonDelegate
      * When a child process is forked
      * @param int $pid
      * @param string $note
+     * @param null $taskReference
      */
-    public function whenChildProcessForked($pid, $note = '')
+    public function whenChildProcessForked($pid, $note = '', $taskReference = null)
     {
         echo "[" . time() . "] " . __METHOD__ . " PID: " . $pid . " " . $note . PHP_EOL;
     }
@@ -131,8 +132,9 @@ class TestParallelQueueDaemonDelegate extends ParallelQueueDaemonDelegate
     /**
      * When a child process is observed dead by WAIT function
      * @param int $pid
+     * @param array $detail
      */
-    public function whenChildProcessConfirmedDead($pid)
+    public function whenChildProcessConfirmedDead($pid, $detail = [])
     {
         echo "[" . time() . "] " . __METHOD__ . " PID: " . $pid . PHP_EOL;
     }
@@ -149,10 +151,12 @@ class TestParallelQueueDaemonDelegate extends ParallelQueueDaemonDelegate
 
     /**
      * You can close all opened DB connection here
+     * @param TestParallelQueueTask $task
+     * @return bool
      */
-    public function beforeFork()
+    public function beforeFork($task = null)
     {
-        //echo "[".time()."] ".__METHOD__.PHP_EOL;
+        return $task->beforeExecute();
     }
 
     /**

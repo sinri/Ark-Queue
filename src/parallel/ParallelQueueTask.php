@@ -25,6 +25,7 @@ abstract class ParallelQueueTask extends QueueTask
     }
 
     /**
+     * It should be run in Delegate::beforeFork to control if this task should run now
      * @return bool
      */
     public function beforeExecute()
@@ -33,6 +34,10 @@ abstract class ParallelQueueTask extends QueueTask
         return $this->readyToExecute;
     }
 
+    /**
+     * It should be run in Delegate::whenTaskExecuted to control how the task should feedback
+     * @return bool
+     */
     public function afterExecute()
     {
         $this->readyToFinish = true;

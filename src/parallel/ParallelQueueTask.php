@@ -25,6 +25,26 @@ abstract class ParallelQueueTask extends QueueTask
     }
 
     /**
+     * Locks should be checked here
+     * Should be called by Delegate::checkNextTaskImplement
+     * @return bool
+     * @since 2.5
+     */
+    public function checkIfLocked()
+    {
+        return false;
+    }
+
+    /**
+     * Array of Lock Names
+     * @return string[]
+     */
+    public function getLockList()
+    {
+        return [];
+    }
+
+    /**
      * It should be run in Delegate::beforeFork to control if this task should run now
      * @return bool
      */
@@ -44,9 +64,5 @@ abstract class ParallelQueueTask extends QueueTask
         return $this->readyToFinish;
     }
 
-    public function getLockList()
-    {
-        return [];
-    }
 
 }

@@ -9,6 +9,7 @@
 namespace sinri\ark\queue\parallel;
 
 
+use Exception;
 use sinri\ark\queue\AbstractQueueDaemon;
 
 class ParallelQueueDaemon extends AbstractQueueDaemon
@@ -31,6 +32,9 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
         $this->delegate = $delegate;
     }
 
+    /**
+     * @param bool $shouldKeepWaitForAll
+     */
     protected function recycle($shouldKeepWaitForAll)
     {
         if (!$shouldKeepWaitForAll) {
@@ -79,6 +83,10 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
     {
         while (true) {
             if ($this->delegate->shouldTerminate()) {
+                // Check config and recycle since 2.6
+                if ($this->delegate->shouldTerminateAfterAllWorkersEnd()) {
+                    $this->recycle(true);
+                }
                 break;
             }
             $this->recycle(false);
@@ -135,7 +143,7 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 $pcntl_error_string = pcntl_strerror($pcntl_error_number);
                 $error_message = 'Loop could not fork a child process to execute task. Error No:' . $pcntl_error_number . " Message:" . $pcntl_error_string;
                 $this->delegate->whenLoopReportError($error_message);
-                $this->delegate->whenTaskRaisedException($nextTask, new \Exception($error_message));
+                $this->delegate->whenTaskRaisedException($nextTask, new Exception($error_message));
             } else if ($childProcessID) {
                 // we are the parent
                 $this->childrenCount++;
@@ -152,7 +160,7 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
                 $this->delegate->whenToExecuteTask($nextTask);
                 try {
                     $nextTask->execute();
-                } catch (\Exception $exception) {
+                } catch (Exception $exception) {
                     $this->delegate->whenTaskRaisedException($nextTask, $exception);
                 }
                 // nextTask::afterExecute should be contained in delegate::whenTaskExecuted

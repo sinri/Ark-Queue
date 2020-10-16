@@ -75,6 +75,17 @@ abstract class ParallelQueueDaemonDelegate extends AbstractQueueDaemonDelegate
     }
 
     /**
+     * 当shouldTerminate发生后校验此方法
+     * 如果返回true，则运行Daemon的recycle方法彻底等所有任务跑完
+     * @return bool
+     * @since 2.6
+     */
+    public function shouldTerminateAfterAllWorkersEnd()
+    {
+        return false;
+    }
+
+    /**
      * Before waiting for tasks done (without WNOHANG option).
      * @return void
      */

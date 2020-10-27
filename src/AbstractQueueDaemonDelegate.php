@@ -29,6 +29,14 @@ abstract class AbstractQueueDaemonDelegate
     abstract public function __construct($config = []);
 
     /**
+     * To be executed before loop cycle starts
+     * @since 2.7
+     */
+    public function whenLoopStarts()
+    {
+    }
+
+    /**
      * @param string $error
      */
     abstract public function whenLoopReportError($error);

@@ -29,6 +29,7 @@ class SerialQueueDaemon extends AbstractQueueDaemon
 
     public function loop()
     {
+        $this->delegate->whenLoopStarts();
         while (true) {
             if ($this->delegate->shouldTerminate()) {
                 break;

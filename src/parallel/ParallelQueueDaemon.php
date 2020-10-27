@@ -81,6 +81,7 @@ class ParallelQueueDaemon extends AbstractQueueDaemon
 
     public function loop()
     {
+        $this->delegate->whenLoopStarts();
         while (true) {
             if ($this->delegate->shouldTerminate()) {
                 // Check config and recycle since 2.6
